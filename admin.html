@@ -4,12 +4,18 @@
 <meta charset="UTF-8">
 <title>Admin Panel — Darul Hikmah</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-const supabaseClient = supabase.createClient(
-  "https://zewfsjfbizjbiakkatcuv.supabase.co",
-  "sb_publishable_6L7McdBKcEWPI0H4tFhCpw_zj6IMWiz"
+const supabaseClient = window.supabase.createClient(
+  "https://zewfsjfjzbijakkatcuu.supabase.co",  // ✅ SAME as login
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpld2ZzamZqemJpamFra2F0Y3V1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMzUzNjAsImV4cCI6MjA5MDcxMTM2MH0.xjF8RjWWPCchsFXTTva_tBAj9UAlkYKaVD6OPfufqIs",
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true
+    }
+  }
 );
 
 // 🔐 CHECK LOGIN
@@ -41,7 +47,7 @@ async function changePassword() {
   });
 
   if (error) {
-    alert("Failed ❌");
+    alert(error.message);
   } else {
     alert("Password updated ✅");
   }
@@ -50,14 +56,10 @@ async function changePassword() {
 
 <style>
 body {
-  background: #0F0A05;
+  background: radial-gradient(circle at top, #1a110a, #0f0a05);
   color: #F2EAD8;
-  font-family: Arial;
+  font-family: 'Segoe UI', sans-serif;
   padding: 20px;
-}
-
-h1 {
-  color: #C9A96E;
 }
 
 .top-bar {
@@ -66,12 +68,16 @@ h1 {
   align-items:center;
 }
 
+h1 {
+  color: #C9A96E;
+}
+
 button {
-  background: #C9A96E;
+  background: linear-gradient(135deg, #C9A96E, #a8894f);
   border: none;
-  padding: 6px 10px;
+  padding: 8px 12px;
   cursor: pointer;
-  margin-top:5px;
+  border-radius: 6px;
 }
 
 table {
@@ -82,8 +88,7 @@ table {
 
 th, td {
   padding: 10px;
-  border: 1px solid #C9A96E33;
-  text-align: left;
+  border: 1px solid rgba(201,169,110,0.2);
 }
 
 th {
@@ -96,6 +101,90 @@ th {
 </style>
 </head>
 
+<body>
+
+<div class="top-bar">
+  <h1>📊 Student Submissions</h1>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<div class="password-box">
+  <h3>Change Password</h3>
+  <input id="newPassword" type="password" placeholder="New Password">
+  <button onclick="changePassword()">Update Password</button>
+</div>
+
+<table id="data-table">
+<thead>
+<tr>
+<th>Name</th>
+<th>Phone</th>
+<th>Address</th>
+<th>Gender</th>
+<th>Email</th>
+<th>Education</th>
+<th>Shaykh</th>
+<th>Source</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<script>
+async function loadData() {
+  const { data, error } = await supabaseClient
+    .from("submissions")
+    .select("*")
+    .order("id", { ascending: false });
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  const table = document.querySelector("#data-table tbody");
+  table.innerHTML = "";
+
+  data.forEach(row => {
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${row.name || ""}</td>
+      <td>${row.phone || ""}</td>
+      <td>${row.Full_Address || ""}</td>
+      <td>${row.Gender || ""}</td>
+      <td>${row.Email_id || ""}</td>
+      <td>${row.Education_Qualifi || ""}</td>
+      <td>${row.any_Shaykh || ""}</td>
+      <td>${row.source || ""}</td>
+      <td><button onclick="deleteRow(${row.id})">Delete</button></td>
+    `;
+
+    table.appendChild(tr);
+  });
+}
+
+async function deleteRow(id) {
+  if (!confirm("Delete this entry?")) return;
+
+  const { error } = await supabaseClient
+    .from("submissions")
+    .delete()
+    .eq("id", id);
+
+  if (!error) {
+    loadData();
+  } else {
+    alert(error.message);
+  }
+}
+
+loadData();
+</script>
+
+</body>
+</html>
 <body>
 
 <div class="top-bar">
