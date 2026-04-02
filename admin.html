@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel — Darul Hikmah</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<style>
+body {
+  background: #0F0A05;
+  color: #F2EAD8;
+  font-family: Arial;
+  padding: 20px;
+}
+
+h1 {
+  color: #C9A96E;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #C9A96E33;
+  text-align: left;
+}
+
+th {
+  background: #1A110A;
+}
+
+button {
+  background: #C9A96E;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h1>📊 Student Submissions</h1>
+
+<table id="data-table">
+<thead>
+<tr>
+<th>Name</th>
+<th>Phone</th>
+<th>Address</th>
+<th>Gender</th>
+<th>Email</th>
+<th>Education</th>
+<th>Shaykh</th>
+<th>Source</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody></tbody>
+</table>
+
+<script>
+const supabaseClient = supabase.createClient(
+  "https://zewfsjfbizjbiakkatcuv.supabase.co",
+  "sb_publishable_6L7McdBKcEWPI0H4tFhCpw_zj6IMWiz"
+);
+
+async function loadData() {
+  const { data, error } = await supabaseClient
+    .from("submissions")
+    .select("*")
+    .order("id", { ascending: false });
+
+  if (error) {
+    alert("Error loading data");
+    return;
+  }
+
+  const table = document.querySelector("#data-table tbody");
+  table.innerHTML = "";
+
+  data.forEach(row => {
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${row.name || ""}</td>
+      <td>${row.phone || ""}</td>
+      <td>${row.Full_Address || ""}</td>
+      <td>${row.Gender || ""}</td>
+      <td>${row.Email_id || ""}</td>
+      <td>${row.Education_Qualifi || ""}</td>
+      <td>${row.any_Shaykh || ""}</td>
+      <td>${row.source || ""}</td>
+      <td><button onclick="deleteRow(${row.id})">Delete</button></td>
+    `;
+
+    table.appendChild(tr);
+  });
+}
+
+async function deleteRow(id) {
+  if (!confirm("Delete this entry?")) return;
+
+  const { error } = await supabaseClient
+    .from("submissions")
+    .delete()
+    .eq("id", id);
+
+  if (!error) {
+    loadData();
+  } else {
+    alert("Delete failed");
+  }
+}
+
+loadData();
+</script>
+
+</body>
+</html>
