@@ -3,7 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <title>Admin Panel — Darul Hikmah</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<script>
+const supabaseClient = supabase.createClient(
+  "https://zewfsjfbizjbiakkatcuv.supabase.co",
+  "sb_publishable_6L7McdBKcEWPI0H4tFhCpw_zj6IMWiz"
+);
+
+// 🔐 CHECK LOGIN
+async function checkAuth() {
+  const { data } = await supabaseClient.auth.getUser();
+  if (!data.user) {
+    window.location.href = "/login.html";
+  }
+}
+checkAuth();
+
+// 🚪 LOGOUT
+async function logout() {
+  await supabaseClient.auth.signOut();
+  window.location.href = "/login.html";
+}
+
+// 🔄 CHANGE PASSWORD
+async function changePassword() {
+  const newPassword = document.getElementById("newPassword").value;
+
+  if (!newPassword) {
+    alert("Enter new password");
+    return;
+  }
+
+  const { error } = await supabaseClient.auth.updateUser({
+    password: newPassword
+  });
+
+  if (error) {
+    alert("Failed ❌");
+  } else {
+    alert("Password updated ✅");
+  }
+}
+</script>
 
 <style>
 body {
@@ -15,6 +58,20 @@ body {
 
 h1 {
   color: #C9A96E;
+}
+
+.top-bar {
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+}
+
+button {
+  background: #C9A96E;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+  margin-top:5px;
 }
 
 table {
@@ -33,19 +90,27 @@ th {
   background: #1A110A;
 }
 
-button {
-  background: #C9A96E;
-  border: none;
-  padding: 6px 10px;
-  cursor: pointer;
+.password-box {
+  margin-top:20px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>📊 Student Submissions</h1>
+<div class="top-bar">
+  <h1>📊 Student Submissions</h1>
+  <button onclick="logout()">Logout</button>
+</div>
 
+<!-- 🔄 CHANGE PASSWORD -->
+<div class="password-box">
+  <h3>Change Password</h3>
+  <input id="newPassword" type="password" placeholder="New Password">
+  <button onclick="changePassword()">Update Password</button>
+</div>
+
+<!-- 📊 DATA TABLE -->
 <table id="data-table">
 <thead>
 <tr>
@@ -65,11 +130,6 @@ button {
 </table>
 
 <script>
-const supabaseClient = supabase.createClient(
-  "https://zewfsjfbizjbiakkatcuv.supabase.co",
-  "sb_publishable_6L7McdBKcEWPI0H4tFhCpw_zj6IMWiz"
-);
-
 async function loadData() {
   const { data, error } = await supabaseClient
     .from("submissions")
