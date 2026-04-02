@@ -1,62 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Admin Login</title>
+<meta charset="UTF-8">
+<title>Admin Login — Darul Hikmah</title>
 
-  <!-- Supabase CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <style>
-    body {
-      background: #0F0A05;
-      color: #F2EAD8;
-      font-family: Arial;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-    .box {
-      background: #1A110A;
-      padding: 30px;
-      border-radius: 10px;
-      width: 320px;
-      text-align: center;
-    }
+body {
+  background: radial-gradient(circle at top, #1a110a, #0f0a05);
+  color: #F2EAD8;
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
 
-    input, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 12px;
-      border-radius: 5px;
-      border: none;
-    }
+/* Card */
+.container {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(201, 169, 110, 0.2);
+  padding: 40px;
+  border-radius: 16px;
+  width: 340px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+}
 
-    button {
-      background: #C9A96E;
-      cursor: pointer;
-      font-weight: bold;
-    }
-  </style>
+/* Title */
+h2 {
+  color: #C9A96E;
+  margin-bottom: 20px;
+}
+
+/* Inputs */
+input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(201,169,110,0.2);
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  outline: none;
+}
+
+input::placeholder {
+  color: #aaa;
+}
+
+/* Button */
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 18px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #C9A96E, #a8894f);
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+/* Loader */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Footer */
+.footer {
+  margin-top: 15px;
+  font-size: 12px;
+  color: #888;
+}
+</style>
 </head>
 
 <body>
 
-<div class="box">
+<div class="container">
   <h2>Admin Login</h2>
 
   <input id="email" type="email" placeholder="Enter Email">
   <input id="password" type="password" placeholder="Enter Password">
 
-  <button onclick="login()">Login</button>
+  <button id="loginBtn" onclick="login()">Login</button>
+
+  <div class="footer">Darul Hikmah System</div>
 </div>
 
 <script>
 const supabaseClient = window.supabase.createClient(
   "https://zewfsjfbizjbiakkatcuv.supabase.co",
-  "sb_publishable_6L7McdBKcEWPI0H4tFhCpw_zj6IMWiz",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpld2ZzamZqemJpamFra2F0Y3V1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMzUzNjAsImV4cCI6MjA5MDcxMTM2MH0.xjF8RjWWPCchsFXTTva_tBAj9UAlkYKaVD6OPfufqIs",
   {
     auth: {
       persistSession: true,
@@ -66,6 +117,7 @@ const supabaseClient = window.supabase.createClient(
 );
 
 async function login() {
+  const btn = document.getElementById("loginBtn");
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
 
@@ -74,14 +126,19 @@ async function login() {
     return;
   }
 
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
+  btn.innerText = "Logging in...";
+  btn.classList.add("loading");
+
+  const { error } = await supabaseClient.auth.signInWithPassword({
     email,
     password
   });
 
   if (error) {
-    console.error("LOGIN ERROR:", error);
-    alert(error.message); // shows real issue
+    console.error(error);
+    alert(error.message);
+    btn.innerText = "Login";
+    btn.classList.remove("loading");
   } else {
     window.location.href = "/admin.html";
   }
