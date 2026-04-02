@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <title>Admin Login</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     body {
@@ -33,10 +34,6 @@
       border: none;
     }
 
-    input {
-      outline: none;
-    }
-
     button {
       background: #C9A96E;
       cursor: pointer;
@@ -59,7 +56,13 @@
 <script>
 const supabaseClient = window.supabase.createClient(
   "https://zewfsjfbizjbiakkatcuv.supabase.co",
-  "sb_publishable_6L7McdBKcEWPI0H4tFhCpw_zj6IMWiz"
+  "sb_publishable_6L7McdBKcEWPI0H4tFhCpw_zj6IMWiz",
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true
+    }
+  }
 );
 
 async function login() {
@@ -72,15 +75,14 @@ async function login() {
   }
 
   const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: email,
-    password: password
+    email,
+    password
   });
 
   if (error) {
-    console.error(error.message);
-    alert("Invalid email or password ❌");
+    console.error("LOGIN ERROR:", error);
+    alert(error.message); // shows real issue
   } else {
-    alert("Login successful ✅");
     window.location.href = "/admin.html";
   }
 }
@@ -88,4 +90,3 @@ async function login() {
 
 </body>
 </html>
-
