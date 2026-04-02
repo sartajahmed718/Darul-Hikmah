@@ -8,50 +8,82 @@
 
 <script>
 const supabaseClient = window.supabase.createClient(
-  "https://zewfsjfjzbijakkatcuu.supabase.co",  // ✅ SAME as login
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpld2ZzamZqemJpamFra2F0Y3V1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMzUzNjAsImV4cCI6MjA5MDcxMTM2MH0.xjF8RjWWPCchsFXTTva_tBAj9UAlkYKaVD6OPfufqIs",
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true
-    }
-  }
+  "https://zewfsjfjzbijakkatcuu.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpld2ZzamZqemJpamFra2F0Y3V1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMzUzNjAsImV4cCI6MjA5MDcxMTM2MH0.xjF8RjWWPCchsFXTTva_tBAj9UAlkYKaVD6OPfufqIs"
 );
 
-// 🔐 CHECK LOGIN
+// 🔐 Check login
 async function checkAuth() {
   const { data } = await supabaseClient.auth.getUser();
-  if (!data.user) {
-    window.location.href = "/login.html";
-  }
+  if (!data.user) window.location.href = "/login.html";
 }
-checkAuth();
 
-// 🚪 LOGOUT
+// 🚪 Logout
 async function logout() {
   await supabaseClient.auth.signOut();
   window.location.href = "/login.html";
 }
 
-// 🔄 CHANGE PASSWORD
+// 🔄 Change password
 async function changePassword() {
   const newPassword = document.getElementById("newPassword").value;
+  if (!newPassword) return alert("Enter new password");
 
-  if (!newPassword) {
-    alert("Enter new password");
-    return;
-  }
+  const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
 
-  const { error } = await supabaseClient.auth.updateUser({
-    password: newPassword
-  });
-
-  if (error) {
-    alert(error.message);
-  } else {
-    alert("Password updated ✅");
-  }
+  if (error) alert(error.message);
+  else alert("Password updated ✅");
 }
+
+// 📊 Load data
+async function loadData() {
+  const { data, error } = await supabaseClient
+    .from("submissions")
+    .select("*")
+    .order("id", { ascending: false });
+
+  if (error) return alert(error.message);
+
+  const table = document.querySelector("#data-table tbody");
+  table.innerHTML = "";
+
+  data.forEach(row => {
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${row.name ?? ""}</td>
+      <td>${row.phone ?? ""}</td>
+      <td>${row.Full_Address ?? ""}</td>
+      <td>${row.Gender ?? ""}</td>
+      <td>${row.Email_id ?? ""}</td>
+      <td>${row.Education_Qualifi ?? ""}</td>
+      <td>${row.any_Shaykh ?? ""}</td>
+      <td>${row.source ?? ""}</td>
+      <td><button onclick="deleteRow(${row.id})">Delete</button></td>
+    `;
+
+    table.appendChild(tr);
+  });
+}
+
+// 🗑 Delete
+async function deleteRow(id) {
+  if (!confirm("Delete this entry?")) return;
+
+  const { error } = await supabaseClient
+    .from("submissions")
+    .delete()
+    .eq("id", id);
+
+  if (!error) loadData();
+  else alert(error.message);
+}
+
+// 🚀 Init
+window.onload = async () => {
+  await checkAuth();
+  await loadData();
+};
 </script>
 
 <style>
@@ -130,145 +162,6 @@ th {
 </thead>
 <tbody></tbody>
 </table>
-
-<script>
-async function loadData() {
-  const { data, error } = await supabaseClient
-    .from("submissions")
-    .select("*")
-    .order("id", { ascending: false });
-
-  if (error) {
-    alert(error.message);
-    return;
-  }
-
-  const table = document.querySelector("#data-table tbody");
-  table.innerHTML = "";
-
-  data.forEach(row => {
-    const tr = document.createElement("tr");
-
-    tr.innerHTML = `
-      <td>${row.name || ""}</td>
-      <td>${row.phone || ""}</td>
-      <td>${row.Full_Address || ""}</td>
-      <td>${row.Gender || ""}</td>
-      <td>${row.Email_id || ""}</td>
-      <td>${row.Education_Qualifi || ""}</td>
-      <td>${row.any_Shaykh || ""}</td>
-      <td>${row.source || ""}</td>
-      <td><button onclick="deleteRow(${row.id})">Delete</button></td>
-    `;
-
-    table.appendChild(tr);
-  });
-}
-
-async function deleteRow(id) {
-  if (!confirm("Delete this entry?")) return;
-
-  const { error } = await supabaseClient
-    .from("submissions")
-    .delete()
-    .eq("id", id);
-
-  if (!error) {
-    loadData();
-  } else {
-    alert(error.message);
-  }
-}
-
-loadData();
-</script>
-
-</body>
-</html>
-<body>
-
-<div class="top-bar">
-  <h1>📊 Student Submissions</h1>
-  <button onclick="logout()">Logout</button>
-</div>
-
-<!-- 🔄 CHANGE PASSWORD -->
-<div class="password-box">
-  <h3>Change Password</h3>
-  <input id="newPassword" type="password" placeholder="New Password">
-  <button onclick="changePassword()">Update Password</button>
-</div>
-
-<!-- 📊 DATA TABLE -->
-<table id="data-table">
-<thead>
-<tr>
-<th>Name</th>
-<th>Phone</th>
-<th>Address</th>
-<th>Gender</th>
-<th>Email</th>
-<th>Education</th>
-<th>Shaykh</th>
-<th>Source</th>
-<th>Action</th>
-</tr>
-</thead>
-
-<tbody></tbody>
-</table>
-
-<script>
-async function loadData() {
-  const { data, error } = await supabaseClient
-    .from("submissions")
-    .select("*")
-    .order("id", { ascending: false });
-
-  if (error) {
-    alert("Error loading data");
-    return;
-  }
-
-  const table = document.querySelector("#data-table tbody");
-  table.innerHTML = "";
-
-  data.forEach(row => {
-    const tr = document.createElement("tr");
-
-    tr.innerHTML = `
-      <td>${row.name || ""}</td>
-      <td>${row.phone || ""}</td>
-      <td>${row.Full_Address || ""}</td>
-      <td>${row.Gender || ""}</td>
-      <td>${row.Email_id || ""}</td>
-      <td>${row.Education_Qualifi || ""}</td>
-      <td>${row.any_Shaykh || ""}</td>
-      <td>${row.source || ""}</td>
-      <td><button onclick="deleteRow(${row.id})">Delete</button></td>
-    `;
-
-    table.appendChild(tr);
-  });
-}
-
-async function deleteRow(id) {
-  if (!confirm("Delete this entry?")) return;
-
-  const { error } = await supabaseClient
-    .from("submissions")
-    .delete()
-    .eq("id", id);
-
-  if (!error) {
-    loadData();
-  } else {
-    alert("Delete failed");
-  }
-}
-
-loadData();
-</script>
 
 </body>
 </html>
