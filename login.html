@@ -23,7 +23,6 @@ body {
   height: 100vh;
 }
 
-/* Card */
 .container {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(12px);
@@ -35,13 +34,11 @@ body {
   box-shadow: 0 10px 40px rgba(0,0,0,0.6);
 }
 
-/* Title */
 h2 {
   color: #C9A96E;
   margin-bottom: 20px;
 }
 
-/* Inputs */
 input {
   width: 100%;
   padding: 12px;
@@ -50,14 +47,8 @@ input {
   border: 1px solid rgba(201,169,110,0.2);
   background: rgba(255,255,255,0.05);
   color: #fff;
-  outline: none;
 }
 
-input::placeholder {
-  color: #aaa;
-}
-
-/* Button */
 button {
   width: 100%;
   padding: 12px;
@@ -68,21 +59,13 @@ button {
   color: #000;
   font-weight: bold;
   cursor: pointer;
-  transition: 0.3s;
 }
 
-button:hover {
-  transform: translateY(-2px);
-  opacity: 0.9;
-}
-
-/* Loader */
 .loading {
   opacity: 0.6;
   pointer-events: none;
 }
 
-/* Footer */
 .footer {
   margin-top: 15px;
   font-size: 12px;
@@ -106,7 +89,7 @@ button:hover {
 
 <script>
 const supabaseClient = window.supabase.createClient(
-  "https://zewfsjfbizjbiakkatcuv.supabase.co",
+  "https://zewfsjfjzbijakkatcuu.supabase.co",  // ✅ FIXED URL (matches key)
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpld2ZzamZqemJpamFra2F0Y3V1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMzUzNjAsImV4cCI6MjA5MDcxMTM2MH0.xjF8RjWWPCchsFXTTva_tBAj9UAlkYKaVD6OPfufqIs",
   {
     auth: {
