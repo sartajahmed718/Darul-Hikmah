@@ -89,7 +89,7 @@ button {
 
 <script>
 const supabaseClient = window.supabase.createClient(
-  "https://zewfsjfjzbijakkatcuu.supabase.co",  // ✅ FIXED URL (matches key)
+  "https://zewfsjfjzbijakkatcuu.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpld2ZzamZqemJpamFra2F0Y3V1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMzUzNjAsImV4cCI6MjA5MDcxMTM2MH0.xjF8RjWWPCchsFXTTva_tBAj9UAlkYKaVD6OPfufqIs",
   {
     auth: {
@@ -98,6 +98,14 @@ const supabaseClient = window.supabase.createClient(
     }
   }
 );
+
+// ✅ Auto-redirect if already logged in
+window.onload = async () => {
+  const { data } = await supabaseClient.auth.getUser();
+  if (data.user) {
+    window.location.href = "/admin.html";
+  }
+};
 
 async function login() {
   const btn = document.getElementById("loginBtn");
@@ -112,18 +120,25 @@ async function login() {
   btn.innerText = "Logging in...";
   btn.classList.add("loading");
 
-  const { error } = await supabaseClient.auth.signInWithPassword({
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
     email,
     password
   });
 
   if (error) {
-    console.error(error);
     alert(error.message);
     btn.innerText = "Login";
     btn.classList.remove("loading");
-  } else {
+    return;
+  }
+
+  // ✅ Ensure session saved
+  if (data.session) {
     window.location.href = "/admin.html";
+  } else {
+    alert("Login failed. Try again.");
+    btn.innerText = "Login";
+    btn.classList.remove("loading");
   }
 }
 </script>
