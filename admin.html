@@ -14,8 +14,11 @@ const supabaseClient = window.supabase.createClient(
 
 // 🔐 Check login
 async function checkAuth() {
-  const { data } = await supabaseClient.auth.getUser();
-  if (!data.user) window.location.href = "/login.html";
+  const { data, error } = await supabaseClient.auth.getUser();
+
+  if (error || !data.user) {
+    window.location.href = "/login.html";
+  }
 }
 
 // 🚪 Logout
@@ -27,38 +30,58 @@ async function logout() {
 // 🔄 Change password
 async function changePassword() {
   const newPassword = document.getElementById("newPassword").value;
-  if (!newPassword) return alert("Enter new password");
 
-  const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+  if (!newPassword) {
+    alert("Enter new password");
+    return;
+  }
 
-  if (error) alert(error.message);
-  else alert("Password updated ✅");
+  const { error } = await supabaseClient.auth.updateUser({
+    password: newPassword
+  });
+
+  if (error) {
+    alert(error.message);
+  } else {
+    alert("Password updated ✅");
+    document.getElementById("newPassword").value = "";
+  }
 }
 
-// 📊 Load data
+// 📊 Load data (FIXED)
 async function loadData() {
   const { data, error } = await supabaseClient
-    .from("submissions")
+    .from("students") // ✅ correct table
     .select("*")
     .order("id", { ascending: false });
 
-  if (error) return alert(error.message);
+  if (error) {
+    alert(error.message);
+    return;
+  }
 
   const table = document.querySelector("#data-table tbody");
   table.innerHTML = "";
+
+  if (!data.length) {
+    table.innerHTML = "<tr><td colspan='10'>No data found</td></tr>";
+    return;
+  }
 
   data.forEach(row => {
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
-      <td>${row.name ?? ""}</td>
-      <td>${row.phone ?? ""}</td>
-      <td>${row.Full_Address ?? ""}</td>
-      <td>${row.Gender ?? ""}</td>
-      <td>${row.Email_id ?? ""}</td>
-      <td>${row.Education_Qualifi ?? ""}</td>
-      <td>${row.any_Shaykh ?? ""}</td>
-      <td>${row.source ?? ""}</td>
+      <td>${row.full_name || ""}</td>
+      <td>${row.phone || ""}</td>
+      <td>${row.address || ""}</td>
+      <td>${row.gender || ""}</td>
+      <td>${row.email || ""}</td>
+      <td>${row.education || ""}</td>
+      <td>${row.previous_study || ""}</td>
+      <td>${row.reason || ""}</td>
+      <td>${row.source || ""}</td>
+      <td>${row.payment_status || ""}</td>
       <td><button onclick="deleteRow(${row.id})">Delete</button></td>
     `;
 
@@ -71,12 +94,20 @@ async function deleteRow(id) {
   if (!confirm("Delete this entry?")) return;
 
   const { error } = await supabaseClient
-    .from("submissions")
+    .from("students") // ✅ correct table
     .delete()
     .eq("id", id);
 
-  if (!error) loadData();
-  else alert(error.message);
+  if (error) {
+    alert(error.message);
+  } else {
+    loadData();
+  }
+}
+
+// 🔄 Refresh
+function refreshData() {
+  loadData();
 }
 
 // 🚀 Init
@@ -98,6 +129,7 @@ body {
   display:flex;
   justify-content: space-between;
   align-items:center;
+  margin-bottom: 20px;
 }
 
 h1 {
@@ -110,12 +142,13 @@ button {
   padding: 8px 12px;
   cursor: pointer;
   border-radius: 6px;
+  margin: 2px;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 th, td {
@@ -127,8 +160,11 @@ th {
   background: #1A110A;
 }
 
-.password-box {
-  margin-top:20px;
+input {
+  padding: 6px;
+  margin-right: 5px;
+  border-radius: 4px;
+  border: none;
 }
 </style>
 </head>
@@ -137,13 +173,16 @@ th {
 
 <div class="top-bar">
   <h1>📊 Student Submissions</h1>
-  <button onclick="logout()">Logout</button>
+  <div>
+    <button onclick="refreshData()">Refresh</button>
+    <button onclick="logout()">Logout</button>
+  </div>
 </div>
 
-<div class="password-box">
+<div style="margin-top:20px;">
   <h3>Change Password</h3>
   <input id="newPassword" type="password" placeholder="New Password">
-  <button onclick="changePassword()">Update Password</button>
+  <button onclick="changePassword()">Update</button>
 </div>
 
 <table id="data-table">
@@ -155,8 +194,10 @@ th {
 <th>Gender</th>
 <th>Email</th>
 <th>Education</th>
-<th>Shaykh</th>
+<th>Previous Study</th>
+<th>Reason</th>
 <th>Source</th>
+<th>Payment</th>
 <th>Action</th>
 </tr>
 </thead>
