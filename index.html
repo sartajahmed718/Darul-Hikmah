@@ -1275,6 +1275,97 @@ function checkHash() {
 }
 window.addEventListener('hashchange', checkHash);
 checkHash();
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const supabaseClient = window.supabase.createClient(
+  "https://zewfsjfjzbijakkatcuu.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpld2ZzamZqemJpamFra2F0Y3V1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMzUzNjAsImV4cCI6MjA5MDcxMTM2MH0.xjF8RjWWPCchsFXTTva_tBAj9UAlkYKaVD6OPfufqIs"
+);
+
+// 🚀 OVERRIDE THE EXISTING SUBMIT FUNCTION
+window.submitRegistration = async function() {
+  // 1. Verify that all 4 checkboxes are accepted
+  if (!allCbChecked()) {
+    toast('Please accept all 4 declarations to proceed');
+    for (var i = 1; i <= 4; i++) {
+      if (!cbState[i]) {
+        var wrap = document.getElementById('cb-wrap-' + i);
+        wrap.style.borderColor = '#E05555';
+        (function(w) {
+          setTimeout(function() { w.style.borderColor = ''; }, 1800);
+        })(wrap);
+      }
+    }
+    return;
+  }
+
+  // 2. Validate required fields
+  if (!formData.full_name || !formData.phone) {
+    toast("Please fill required fields (Name and Phone)");
+    return;
+  }
+
+  // Show loading state to prevent double-clicks
+  const submitBtn = document.getElementById('submitBtn');
+  const originalText = submitBtn.textContent;
+  submitBtn.textContent = "Submitting...";
+  submitBtn.disabled = true;
+
+  // 3. Prepare data mapping using your existing 'formData' object
+  const data = {
+    full_name: formData.full_name || "",
+    date_of_birth: formData.date_of_birth || "",
+    gender: formData.gender || "",
+    phone: formData.phone || "",
+    email: formData.email || "",
+    address: formData.address || "",
+    education: formData.education || "",
+    previous_study: formData.previous_study || "",
+    reason: formData.reason || "",
+    source: formData.source || "",
+    payment_status: "pending"
+  };
+
+  try {
+    // 4. Send to Supabase
+    const { error } = await supabaseClient
+      .from("students")
+      .insert([data]);
+
+    if (error) {
+      toast("Database Error: " + error.message);
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+      return;
+    }
+
+    // 5. If successful, trigger your existing UI success overlay
+    document.getElementById('success-overlay').classList.add('show');
+    document.getElementById('reg-ref').textContent = 'REF-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+
+    // Reset the form using your existing functions
+    clearForm();
+    for(var i=1; i<=4; i++) { 
+      cbState[i] = false; 
+      updateCbUI(i); 
+    }
+    updateCbStatus();
+    
+    // (Optional) Keep saving to local storage as a backup
+    data.created_at = new Date().toISOString();
+    students.push(data);
+    saveToStorage();
+
+  } catch (err) {
+    toast("An unexpected connection error occurred.");
+  } finally {
+    submitBtn.textContent = originalText;
+    submitBtn.disabled = false;
+  }
+};
+
+  
 </script>
 </body>
 </html>
